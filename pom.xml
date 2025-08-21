@@ -50,6 +50,14 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>app-service</module>
+		<module>application</module>
+		<module>domain</module>
+		<module>infrastructure</module>
+	</modules>
 
 	<build>
 		<plugins>

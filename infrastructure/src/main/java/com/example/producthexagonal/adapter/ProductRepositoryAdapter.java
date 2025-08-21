@@ -1,6 +1,7 @@
 package com.example.producthexagonal.adapter;
 
 import com.example.producthexagonal.entity.ProductEntity;
+import com.example.producthexagonal.mapper.entity.ProductEntityMapper;
 import com.example.producthexagonal.model.Product;
 import com.example.producthexagonal.ports.ProductRepository;
 import com.example.producthexagonal.repository.JpaProductRepository;
@@ -14,29 +15,30 @@ import java.util.stream.Collectors;
 public class ProductRepositoryAdapter implements ProductRepository {
 
     private final JpaProductRepository jpaRepository;
+    private final ProductEntityMapper productEntityMapper;
 
-    public ProductRepositoryAdapter(JpaProductRepository jpaRepository) {
+    public ProductRepositoryAdapter(JpaProductRepository jpaRepository, ProductEntityMapper productEntityMapper) {
         this.jpaRepository = jpaRepository;
+        this.productEntityMapper = productEntityMapper;
     }
-
 
     @Override
     public Product save(Product product) {
-        ProductEntity entity = toEntity(product);
+        ProductEntity entity = productEntityMapper.toEntity(product);
         ProductEntity savedEntity = jpaRepository.save(entity);
-        return toDomain(savedEntity);
+        return productEntityMapper.toDomain(savedEntity);
     }
 
     @Override
     public Optional<Product> findById(Long id) {
-        return jpaRepository.findById(id).map(this::toDomain);
+        return jpaRepository.findById(id).map(productEntityMapper::toDomain);
     }
 
     @Override
     public List<Product> findAll() {
         return jpaRepository.findAll().stream()
-                .map(this::toDomain)
-                .collect(Collectors.toList());
+                .map(productEntityMapper::toDomain)
+                .toList();
     }
 
     @Override
@@ -44,20 +46,5 @@ public class ProductRepositoryAdapter implements ProductRepository {
         jpaRepository.deleteById(id);
     }
 
-    // --- Métodos de mapeo ---
-    private ProductEntity toEntity(Product product) {
-        ProductEntity entity = new ProductEntity();
-        entity.setId(product.getId());
-        entity.setName(product.getName());
-        entity.setPrice(product.getPrice());
-        return entity;
-    }
 
-    private Product toDomain(ProductEntity entity) {
-        return new Product(
-                entity.getId(),
-                entity.getName(),
-                entity.getPrice()
-        );
-    }
 }
