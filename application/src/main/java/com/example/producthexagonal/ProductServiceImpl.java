@@ -1,15 +1,16 @@
 package com.example.producthexagonal;
 
+import com.example.producthexagonal.exception.BusinessErrorCodes;
+import com.example.producthexagonal.exception.NotFoundException;
 import com.example.producthexagonal.model.Product;
-import com.example.producthexagonal.ProductService;
 import com.example.producthexagonal.ports.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service  // Anotación para inyección de Spring
 public class ProductServiceImpl implements ProductService {
+
     private final ProductRepository repository;
 
     // Inyección de dependencias
@@ -26,20 +27,37 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Optional<Product> getProductById(Long id) {
-        return repository.findById(id);
+    public Product getProductById(Long id) {
+        return repository.findById(id).orElseThrow(() ->
+                new NotFoundException(
+                        BusinessErrorCodes.PRODUCT_NOT_FOUND.message(),
+                        BusinessErrorCodes.PRODUCT_NOT_FOUND.code()
+                ));
     }
 
     @Override
     public List<Product> getAllProducts() {
+
         return repository.findAll();
+
     }
 
     @Override
-    public Product updateProduct(Product product) {
+    public Product updateProduct(Long id, Product product) {
+        Product existingProduct = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException(
+                        BusinessErrorCodes.PRODUCT_NOT_FOUND.message(),
+                        BusinessErrorCodes.PRODUCT_NOT_FOUND.code()
+                ));
+
         product.validatePrice();
-        return repository.save(product);
+
+        existingProduct.setName(product.getName());
+        existingProduct.setPrice(product.getPrice());
+
+        return repository.save(existingProduct);
     }
+
 
     @Override
     public void deleteProduct(Long id) {

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 public class ProductRepositoryAdapter implements ProductRepository {
@@ -22,16 +21,20 @@ public class ProductRepositoryAdapter implements ProductRepository {
         this.productEntityMapper = productEntityMapper;
     }
 
+
     @Override
     public Product save(Product product) {
+
         ProductEntity entity = productEntityMapper.toEntity(product);
         ProductEntity savedEntity = jpaRepository.save(entity);
+
         return productEntityMapper.toDomain(savedEntity);
     }
 
     @Override
     public Optional<Product> findById(Long id) {
-        return jpaRepository.findById(id).map(productEntityMapper::toDomain);
+        return jpaRepository.findById(id)
+                .map(productEntityMapper::toDomain);
     }
 
     @Override
